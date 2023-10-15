@@ -31,7 +31,7 @@ const processRestQueries = async (restQueries, setRestQueries) => {
     }
 
     const data = await response.json();
-    console.log('Data:', data);
+    // console.log('Data:', data);
 
     var items = restQueries;
 
@@ -49,11 +49,11 @@ const processRestQueries = async (restQueries, setRestQueries) => {
 };
 
 const processQlQuery = async (setQlQuery, data, qlQuery) => {
-  console.log(data, '2');
+  // console.log(data, '2');
 
   if (data && data[qlQuery.nameOfQuery]) {
     setQlQuery({ ...qlQuery, response: data[qlQuery.nameOfQuery] });
-    console.log(qlQuery, 'grphql');
+    // console.log(qlQuery, 'grphql');
   }
 };
 
@@ -73,7 +73,7 @@ const Menu = () => {
   }, [restQueries]);
 
   useEffect(() => {
-    console.log(qlQuery, 'dupa');
+    // console.log(qlQuery, 'useEffect');
     if (qlQuery) {
       setQlRequest({ ...qlQuery, response: data });
       processQlQuery(setQlRequest, data, qlQuery);

@@ -7,7 +7,6 @@ const Projects = () => {
 
   if (error) return <p>Something wetn wrong</p>;
   if (loading) return <p>Loading</p>;
-  console.log(data.projects);
   return (
     <>
       {data.projects.length > 0 ? (
