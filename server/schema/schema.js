@@ -8,32 +8,59 @@ const {
   GraphQLList,
   GraphQLNonNull,
   GraphQLEnumType,
+  GraphQLInt,
 } = require('graphql');
 
-const Project = require('../models/Project');
-const Client = require('../models/Client');
+const Post = require('../models/Post');
+const User = require('../models/User');
 
-const ClientType = new GraphQLObjectType({
-  name: 'Client',
+const UserType = new GraphQLObjectType({
+  name: 'User',
   fields: () => ({
     id: { type: GraphQLID },
-    name: { type: GraphQLString },
+    login: { type: GraphQLString },
+    password: { type: GraphQLString },
+    firstName: { type: GraphQLString },
+    lastName: { type: GraphQLString },
     email: { type: GraphQLString },
     phone: { type: GraphQLString },
+    address: { type: GraphQLString },
+    gender: { type: GraphQLString },
+    birthDate: { type: GraphQLString },
+    profilePictureURL: { type: GraphQLString },
+    education: { type: GraphQLString },
+    occupation: { type: GraphQLString },
+    bio: { type: GraphQLString },
+    nationality: { type: GraphQLString },
+    relationshipStatus: { type: GraphQLString },
+    accountCreationDate: { type: GraphQLString },
+    lastActive: { type: GraphQLString },
+    friends: {
+      type: GraphQLList(UserType),
+      resolve(parent, args) {
+        return User.find({ _id: { $in: parent.friends } });
+      },
+    },
+    posts: {
+      type: GraphQLList(PostType),
+      resolve(parent, args) {
+        return Post.find({ authorId: { $eq: parent.id } });
+      },
+    },
   }),
 });
 
-const ProjectType = new GraphQLObjectType({
-  name: 'Project',
+const PostType = new GraphQLObjectType({
+  name: 'Post',
   fields: () => ({
     id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    description: { type: GraphQLString },
-    status: { type: GraphQLString },
-    client: {
-      type: ClientType,
+    date: { type: GraphQLString },
+    content: { type: GraphQLString },
+    likeCount: { type: GraphQLString },
+    author: {
+      type: UserType,
       resolve(parent, args) {
-        return Client.findById(parent.clientId);
+        return User.findById(parent.authorId);
       },
     },
   }),
@@ -42,30 +69,24 @@ const ProjectType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    projects: {
-      type: new GraphQLList(ProjectType),
+    allUsers: {
+      type: new GraphQLList(UserType),
       resolve(parent, args) {
-        return Project.find();
+        return User.find();
       },
     },
-    project: {
-      type: ProjectType,
+    user: {
+      type: UserType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return Project.findById(args.id);
+        return User.findById(args.id);
       },
     },
-    clients: {
-      type: new GraphQLList(ClientType),
-      resolve(parent, args) {
-        return Client.find();
-      },
-    },
-    client: {
-      type: ClientType,
+    post: {
+      type: PostType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return Client.findById(args.id);
+        return Post.findById(args.id);
       },
     },
   },
@@ -74,59 +95,162 @@ const RootQuery = new GraphQLObjectType({
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addClient: {
-      type: ClientType,
+    addPost: {
+      type: PostType,
       args: {
-        name: { type: GraphQLNonNull(GraphQLString) },
-        email: { type: GraphQLNonNull(GraphQLString) },
-        phone: { type: GraphQLNonNull(GraphQLString) },
+        date: { type: GraphQLNonNull(GraphQLString) },
+        content: { type: GraphQLNonNull(GraphQLString) },
+        likeCount: { type: GraphQLNonNull(GraphQLInt) },
+        authorId: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
-        const client = new Client({
-          name: args.name,
-          email: args.email,
-          phone: args.phone,
+      async resolve(parent, args) {
+        const post = new Post({
+          date: args.date,
+          content: args.content,
+          likeCount: args.likeCount,
+          authorId: args.authorId,
         });
 
-        return client.save();
+        try {
+          // Save the user to the database
+          const newPost = await post.save();
+          return newPost;
+        } catch (error) {
+          throw new Error('Error creating a new user: ' + error.message);
+        }
       },
     },
-    deleteClient: {
-      type: ClientType,
+    deletePost: {
+      type: PostType,
       args: {
         id: { type: GraphQLNonNull(GraphQLID) },
       },
       resolve(parent, args) {
-        return Client.findByIdAndDelete(args.id);
+        return Post.findByIdAndDelete(args.id);
       },
     },
-    addProject: {
-      type: ProjectType,
+    addUser: {
+      type: UserType, // Use the UserType for the response
       args: {
-        name: { type: GraphQLNonNull(GraphQLString) },
-        description: { type: GraphQLNonNull(GraphQLString) },
-        status: {
-          type: new GraphQLEnumType({
-            name: 'ProjectStatus',
-            values: {
-              new: { value: 'Not Started' },
-              progress: { value: 'In Progress' },
-              completed: { value: 'Completed' },
-            },
-          }),
-          defaultValue: 'Not Started',
-        },
-        clientId: { type: GraphQLNonNull(GraphQLID) },
+        login: { type: GraphQLNonNull(GraphQLString) },
+        password: { type: GraphQLNonNull(GraphQLString) },
+        firstName: { type: GraphQLNonNull(GraphQLString) },
+        lastName: { type: GraphQLNonNull(GraphQLString) },
+        email: { type: GraphQLNonNull(GraphQLString) },
+        phone: { type: GraphQLNonNull(GraphQLString) },
+        address: { type: GraphQLNonNull(GraphQLString) },
+        gender: { type: GraphQLNonNull(GraphQLString) },
+        birthDate: { type: GraphQLNonNull(GraphQLString) },
+        profilePictureURL: { type: GraphQLNonNull(GraphQLString) },
+        education: { type: GraphQLNonNull(GraphQLString) },
+        occupation: { type: GraphQLNonNull(GraphQLString) },
+        bio: { type: GraphQLNonNull(GraphQLString) },
+        nationality: { type: GraphQLNonNull(GraphQLString) },
+        relationshipStatus: { type: GraphQLNonNull(GraphQLString) },
+        accountCreationDate: { type: GraphQLNonNull(GraphQLString) },
+        lastActive: { type: GraphQLNonNull(GraphQLString) },
+        friends: { type: GraphQLList(GraphQLID) },
       },
-      resolve(parent, args) {
-        const project = new Project({
-          name: args.name,
-          description: args.description,
-          status: args.status,
-          clientId: args.clientId,
+      async resolve(parent, args) {
+        const user = new User({
+          login: args.login,
+          password: args.password,
+          firstName: args.firstName,
+          lastName: args.lastName,
+          email: args.email,
+          phone: args.phone,
+          address: args.address,
+          gender: args.gender,
+          birthDate: args.birthDate,
+          profilePictureURL: args.profilePictureURL,
+          education: args.education,
+          occupation: args.occupation,
+          bio: args.bio,
+          nationality: args.nationality,
+          relationshipStatus: args.relationshipStatus,
+          accountCreationDate: args.accountCreationDate,
+          lastActive: args.lastActive,
+          friends: args.friends,
         });
 
-        return project.save();
+        try {
+          // Save the user to the database
+          const newUser = await user.save();
+          return newUser;
+        } catch (error) {
+          throw new Error('Error creating a new user: ' + error.message);
+        }
+      },
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        return User.findByIdAndDelete(args.id);
+      },
+    },
+    updateUser: {
+      type: UserType, // Use the UserType for the response
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+        login: { type: GraphQLString },
+        password: { type: GraphQLString },
+        firstName: { type: GraphQLString },
+        lastName: { type: GraphQLString },
+        email: { type: GraphQLString },
+        phone: { type: GraphQLString },
+        address: { type: GraphQLString },
+        gender: { type: GraphQLString },
+        birthDate: { type: GraphQLString },
+        profilePictureURL: { type: GraphQLString },
+        education: { type: GraphQLString },
+        occupation: { type: GraphQLString },
+        bio: { type: GraphQLString },
+        nationality: { type: GraphQLString },
+        relationshipStatus: { type: GraphQLString },
+        accountCreationDate: { type: GraphQLString },
+        lastActive: { type: GraphQLString },
+        friends: { type: GraphQLList(GraphQLID) },
+      },
+      async resolve(parent, args) {
+        try {
+          const user = await User.findByIdAndUpdate(
+            args.id,
+            {
+              $set: {
+                login: args.login,
+                password: args.password,
+                firstName: args.firstName,
+                lastName: args.lastName,
+                email: args.email,
+                phone: args.phone,
+                address: args.address,
+                gender: args.gender,
+                birthDate: args.birthDate,
+                profilePictureURL: args.profilePictureURL,
+                education: args.education,
+                occupation: args.occupation,
+                bio: args.bio,
+                nationality: args.nationality,
+                relationshipStatus: args.relationshipStatus,
+                accountCreationDate: args.accountCreationDate,
+                lastActive: args.lastActive,
+                friends: args.friends,
+              },
+            },
+            { new: true }
+          );
+
+          if (!user) {
+            throw new Error('User not found');
+          }
+
+          return user;
+        } catch (error) {
+          throw new Error('Error updating the user: ' + error.message);
+        }
       },
     },
   },
