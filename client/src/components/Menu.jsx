@@ -117,7 +117,6 @@ const Menu = () => {
               endpoint: `${URL}/posts/650efbcb6655fefcac6bdc2c`,
             },
           ]);
-          // console.log(restQueries);
         }}
       >
         Get Post

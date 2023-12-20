@@ -8,7 +8,10 @@ const {
   getSinglePost,
 } = require('../controllers/postController');
 
-router.route('/').get(getPosts).post(addPost);
-router.route('/:id').put(updatePost).delete(deletePost).get(getSinglePost);
+router.route('/').get(getPosts);
+router.route('/').post(addPost);
+router.route('/:id').put(updatePost);
+router.route('/:id').delete(deletePost);
+router.route('/:id').get(getSinglePost);
 
 module.exports = router;

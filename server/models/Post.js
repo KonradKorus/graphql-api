@@ -4,6 +4,9 @@ const PostSchema = new mongoose.Schema({
   date: {
     type: Date,
   },
+  category: {
+    type: String,
+  },
   content: {
     type: String,
   },

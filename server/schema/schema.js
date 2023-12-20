@@ -1,5 +1,3 @@
-const { projects, clients } = require('../sampleData');
-
 const {
   GraphQLObjectType,
   GraphQLID,
@@ -9,6 +7,7 @@ const {
   GraphQLNonNull,
   GraphQLEnumType,
   GraphQLInt,
+  GraphQLBoolean,
 } = require('graphql');
 
 const Post = require('../models/Post');
@@ -34,7 +33,11 @@ const UserType = new GraphQLObjectType({
     nationality: { type: GraphQLString },
     relationshipStatus: { type: GraphQLString },
     accountCreationDate: { type: GraphQLString },
-    lastActive: { type: GraphQLString },
+    lastLogin: { type: GraphQLString },
+    isActive: { type: GraphQLBoolean },
+    intrests: { type: GraphQLList(GraphQLString) },
+    skills: { type: GraphQLList(GraphQLString) },
+    socialMediaLinks: { type: GraphQLList(GraphQLString) },
     friends: {
       type: GraphQLList(UserType),
       resolve(parent, args) {
@@ -55,6 +58,7 @@ const PostType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLID },
     date: { type: GraphQLString },
+    category: { type: GraphQLString },
     content: { type: GraphQLString },
     likeCount: { type: GraphQLString },
     author: {
@@ -69,13 +73,25 @@ const PostType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    allUsers: {
+    users: {
       type: new GraphQLList(UserType),
       resolve(parent, args) {
         return User.find();
       },
     },
     user: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return User.findById(args.id);
+      },
+    },
+
+  },
+});
+
+/*
+ user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
@@ -89,8 +105,8 @@ const RootQuery = new GraphQLObjectType({
         return Post.findById(args.id);
       },
     },
-  },
-});
+
+*/
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
