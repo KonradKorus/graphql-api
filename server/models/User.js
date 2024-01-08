@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   accountCreationDate: { type: Date },
   lastLogin: { type: Date },
   isActive: { type: Boolean },
-  intrests: [{ type: String }],
+  interests: [{ type: String }],
   skills: [{ type: String }],
   socialMediaLinks: [{ type: String }],
   friends: [

@@ -35,7 +35,7 @@ const UserType = new GraphQLObjectType({
     accountCreationDate: { type: GraphQLString },
     lastLogin: { type: GraphQLString },
     isActive: { type: GraphQLBoolean },
-    intrests: { type: GraphQLList(GraphQLString) },
+    interests: { type: GraphQLList(GraphQLString) },
     skills: { type: GraphQLList(GraphQLString) },
     socialMediaLinks: { type: GraphQLList(GraphQLString) },
     friends: {
@@ -86,16 +86,11 @@ const RootQuery = new GraphQLObjectType({
         return User.findById(args.id);
       },
     },
-
-  },
-});
-
-/*
- user: {
-      type: UserType,
+    posts: {
+      type: new GraphQLList(PostType),
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return User.findById(args.id);
+        return Post.find();
       },
     },
     post: {
@@ -105,8 +100,9 @@ const RootQuery = new GraphQLObjectType({
         return Post.findById(args.id);
       },
     },
+  },
+});
 
-*/
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
@@ -128,7 +124,6 @@ const mutation = new GraphQLObjectType({
         });
 
         try {
-          // Save the user to the database
           const newPost = await post.save();
           return newPost;
         } catch (error) {
@@ -146,7 +141,7 @@ const mutation = new GraphQLObjectType({
       },
     },
     addUser: {
-      type: UserType, // Use the UserType for the response
+      type: UserType,
       args: {
         login: { type: GraphQLNonNull(GraphQLString) },
         password: { type: GraphQLNonNull(GraphQLString) },
@@ -190,7 +185,6 @@ const mutation = new GraphQLObjectType({
         });
 
         try {
-          // Save the user to the database
           const newUser = await user.save();
           return newUser;
         } catch (error) {
@@ -208,7 +202,7 @@ const mutation = new GraphQLObjectType({
       },
     },
     updateUser: {
-      type: UserType, // Use the UserType for the response
+      type: UserType,
       args: {
         id: { type: GraphQLNonNull(GraphQLID) },
         login: { type: GraphQLString },
