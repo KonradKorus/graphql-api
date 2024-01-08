@@ -136,6 +136,25 @@ app.get('/api/users/:id/under-fetching-solution', async (req, res) => {
 
 app.use(errorHandler);
 
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'User API',
+      version: '1.0.0',
+    },
+  },
+  apis: [__filename],
+};
+const specs = swaggerJsdoc(options);
+const swaggerAutogen = require('swagger-autogen')();
+
+const outputFile = './swagger_output.json';
+const endpointsFiles = [__filename];
+
+const swaggerDocument = require(outputFile);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 app.listen(port, () => {
   console.log(`server running on port ${port}`);
 });
