@@ -88,9 +88,29 @@ const RootQuery = new GraphQLObjectType({
     },
     posts: {
       type: new GraphQLList(PostType),
-      args: { id: { type: GraphQLID } },
+      args: {
+        category: { type: GraphQLString },
+        authorId: { type: GraphQLID },
+        dateSortingOrder: { type: GraphQLString },
+      },
       resolve(parent, args) {
-        return Post.find();
+        const filterConditions = {};
+
+        if (args.category) {
+          filterConditions.category = args.category;
+        }
+
+        if (args.authorId) {
+          filterConditions.authorId = args.authorId;
+        }
+
+        const sortingOrder = { date: 'asc' };
+
+        if (args.dateSortingOrder) {
+          sortingOrder.date = args.dateSortingOrder;
+        }
+
+        return Post.find(filterConditions).sort(sortingOrder);
       },
     },
     post: {
@@ -102,7 +122,6 @@ const RootQuery = new GraphQLObjectType({
     },
   },
 });
-
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
@@ -138,6 +157,41 @@ const mutation = new GraphQLObjectType({
       },
       resolve(parent, args) {
         return Post.findByIdAndDelete(args.id);
+      },
+    },
+    updatePost: {
+      type: PostType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+        date: { type: GraphQLString },
+        content: { type: GraphQLString },
+        likeCount: { type: GraphQLInt },
+        authorId: { type: GraphQLString },
+        category: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        try {
+          const post = await Post.findByIdAndUpdate(
+            args.id,
+            {
+              $set: {
+                date: args.date,
+                content: args.content,
+                likeCount: args.likeCount,
+                authorId: args.authorId,
+                category: args.category,
+              },
+            },
+            { new: true }
+          );
+
+          if (!post) {
+            throw new Error('User not found');
+          }
+          return post;
+        } catch (error) {
+          throw new Error('Error updating the user: ' + error.message);
+        }
       },
     },
     addUser: {
@@ -266,7 +320,9 @@ const mutation = new GraphQLObjectType({
   },
 });
 
-module.exports = new GraphQLSchema({
-  query: RootQuery,
-  mutation,
-});
+exports.mutation = mutation;
+exports.RootQuery = RootQuery;
+// module.exports = new GraphQLSchema({
+//   query: RootQuery,
+//   mutation,
+// });
